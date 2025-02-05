@@ -2,13 +2,3 @@ hello world
 hello guys
 
 this message for testing of git reset for undo changes
-
-this is from second branch
-
-second branch 
-
-dummy -- new
-
-after delete branch
-
-a = 6;

@@ -10,3 +10,5 @@ second branch
 dummy -- new
 
 after delete branch
+
+a = 6;

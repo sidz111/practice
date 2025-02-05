@@ -1,4 +1,0 @@
-hello world
-hello guys
-
-this message for testing of git reset for undo changes

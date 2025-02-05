@@ -8,3 +8,5 @@ this is from second branch
 second branch 
 
 dummy -- new
+
+after delete branch

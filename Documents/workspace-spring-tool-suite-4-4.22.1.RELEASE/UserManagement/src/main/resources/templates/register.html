@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Fingerprint</title>
+</head>
+<body>
+
+    <h2>Register User with Fingerprint</h2>
+    <form id="registerForm">
+        <label>Name:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label>Fingerprint:</label>
+        <button type="button" onclick="captureFingerprint()">Scan Fingerprint</button><br>
+
+        <input type="hidden" id="fingerprintData" name="fingerprint">
+
+        <button type="submit">Register</button>
+    </form>
+
+    <script>
+        async function captureFingerprint() {
+            try {
+                // Use WebAuthn API to capture fingerprint
+                const publicKey = {
+                    challenge: new Uint8Array(32),
+                    rp: { name: "Fingerprint Auth" },
+                    user: {
+                        id: new Uint8Array(16),
+                        name: "test_user",
+                        displayName: "Test User"
+                    },
+                    pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                    authenticatorSelection: { authenticatorAttachment: "platform" },
+                    timeout: 60000,
+                    attestation: "none"
+                };
+
+                const credential = await navigator.credentials.create({ publicKey });
+
+                // Convert fingerprint data to Base64
+                const fingerprintArray = new Uint8Array(credential.response.attestationObject);
+                const fingerprintBase64 = btoa(String.fromCharCode.apply(null, fingerprintArray));
+
+                // Store in hidden input
+                document.getElementById("fingerprintData").value = fingerprintBase64;
+
+                alert("Fingerprint captured successfully!");
+            } catch (error) {
+                console.error("Error capturing fingerprint:", error);
+                alert("Fingerprint capture failed!");
+            }
+        }
+
+        document.getElementById("registerForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById("name").value;
+            const fingerprint = document.getElementById("fingerprintData").value;
+
+            const formData = new FormData();
+            formData.append("name", name);
+            formData.append("fingerprint", fingerprint);
+
+            // Send data to Spring Boot backend
+            const response = await fetch("/register-user", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                alert("User registered successfully!");
+                window.location.href = "/";
+            } else {
+                alert("Registration failed!");
+            }
+        });
+    </script>
+
+</body>
+</html>

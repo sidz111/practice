@@ -28,12 +28,19 @@ def main(def_args=sys.argv[1:]):
     days_after = args.days_after
     if days_after < 0:
         sys.exit('days_after must not be negative')
-    os.mkdir(directory)
+    if not os.path.exists(directory):
+        os.mkdir(directory)
     os.chdir(directory)
     run(['git', 'init', '-b', 'main'])
 
     run(['git', 'config', 'user.name', user_name])
     run(['git', 'config', 'user.email', user_email])
+
+    run(['git', 'remote', 'remove', 'origin'])
+    run(['git', 'remote', 'add', 'origin', repository])
+    
+    run(['git', 'fetch', 'origin'])
+    run(['git', 'reset', '--hard', 'origin/main'])
 
     start_date = curr_date.replace(hour=20, minute=0) - timedelta(days_before)
     for day in (start_date + timedelta(n) for n in range(days_before + days_after)):
@@ -41,11 +48,8 @@ def main(def_args=sys.argv[1:]):
             for commit_time in (day + timedelta(minutes=m) for m in range(contributions_per_day(args))):
                 contribute(commit_time)
 
-    if repository is not None:
-        # run(['git', 'remote', 'add', 'origin', repository])
-        # run(['git', 'branch', '-M', 'main'])
-        run(['git', 'pull'])
-        run(['git', 'push', '-u', 'origin', 'main'])
+    run(['git', 'pull', '--rebase', 'origin', 'main'])
+    run(['git', 'push', '-u', 'origin', 'main'])
 
     print('\nRepository generation ' + '\x1b[6;30;42mcompleted successfully\x1b[0m!')
 
@@ -71,7 +75,7 @@ def arguments(argsval):
     parser.add_argument('-mc', '--max_commits', type=int, default=10)
     parser.add_argument('-fr', '--frequency', type=int, default=80)
     parser.add_argument('-r', '--repository', type=str)
-    parser.add_argument('-db', '--days_before', type=int, default=365)
+    parser.add_argument('-db', '--days_before', type=int, default=1065)
     parser.add_argument('-da', '--days_after', type=int, default=0)
     return parser.parse_args(argsval)
 
